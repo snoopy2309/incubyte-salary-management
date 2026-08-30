@@ -5,7 +5,7 @@ spring:
   # Datasource is driven entirely by environment variables so no secrets live
   # in the repo. Defaults point at the local docker-compose Postgres.
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/salary}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/salary}
     username: ${SPRING_DATASOURCE_USERNAME:salary}
     password: ${SPRING_DATASOURCE_PASSWORD:salary}
 

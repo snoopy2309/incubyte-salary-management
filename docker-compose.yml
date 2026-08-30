@@ -1,0 +1,25 @@
+# Local development database. `docker compose up -d` starts a Postgres that
+# matches the backend's default datasource config (see backend/application.yml),
+# so the whole stack runs with no manual database install.
+services:
+  db:
+    image: postgres:16
+    container_name: salary-db
+    environment:
+      POSTGRES_DB: salary
+      POSTGRES_USER: salary
+      POSTGRES_PASSWORD: salary
+    # Host port 5433 (not the default 5432) to avoid clashing with any other
+    # local Postgres. The backend's local default datasource points here.
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U salary -d salary"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:
