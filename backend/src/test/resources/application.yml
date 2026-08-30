@@ -1,0 +1,13 @@
+# Test configuration: use a separate database so tests never touch the
+# application/demo data in "salary". Flyway builds the schema here too.
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/salary_test}
+    username: ${SPRING_DATASOURCE_USERNAME:salary}
+    password: ${SPRING_DATASOURCE_PASSWORD:salary}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
