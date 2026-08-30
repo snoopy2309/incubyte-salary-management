@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.acme.salary.common.PagedResponse;
+import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,8 @@ class EmployeeControllerTest {
     @Test
     void returnsPagedEmployees() throws Exception {
         EmployeeSummary summary = new EmployeeSummary(1L, "Ada", "Lovelace",
-                "ada@acme.com", "United Kingdom", "Engineering", "Software Engineer");
+                "ada@acme.com", "United Kingdom", "Engineering", "Software Engineer",
+                new BigDecimal("90000.00"), "GBP", new BigDecimal("114300.00"));
         when(service.list(any(Pageable.class)))
                 .thenReturn(new PagedResponse<>(List.of(summary), 0, 20, 1, 1));
 
@@ -36,6 +38,7 @@ class EmployeeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].email").value("ada@acme.com"))
                 .andExpect(jsonPath("$.content[0].department").value("Engineering"))
+                .andExpect(jsonPath("$.content[0].salaryUsd").value(114300.00))
                 .andExpect(jsonPath("$.totalElements").value(1));
     }
 }

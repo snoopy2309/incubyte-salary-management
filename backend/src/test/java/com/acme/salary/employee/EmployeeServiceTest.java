@@ -5,7 +5,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.acme.salary.common.PagedResponse;
-import java.time.LocalDate;
+import com.acme.salary.currency.CurrencyRate;
+import com.acme.salary.currency.CurrencyRateRepository;
+import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,28 +18,40 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-/** Unit test: the service maps employee entities to summary DTOs, page by page. */
+/**
+ * Unit test: the service joins employees with salaries and normalises each
+ * salary to USD using the currency rates.
+ */
 @ExtendWith(MockitoExtension.class)
 class EmployeeServiceTest {
 
     @Mock
-    private EmployeeRepository repository;
+    private EmployeeRepository employeeRepository;
+
+    @Mock
+    private CurrencyRateRepository rateRepository;
 
     @InjectMocks
     private EmployeeService service;
 
     @Test
-    void listsEmployeesAsSummaries() {
-        Employee employee = new Employee("Ada", "Lovelace", "ada@acme.com",
-                "United Kingdom", "Engineering", "Software Engineer", LocalDate.of(2020, 1, 1));
-        when(repository.findAll(any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(employee)));
+    void listsEmployeesWithSalaryConvertedToUsd() {
+        EmployeeSalaryRow row = new EmployeeSalaryRow(1L, "Ada", "Lovelace", "ada@acme.com",
+                "India", "Engineering", "Software Engineer",
+                new BigDecimal("1000000"), "INR");
+        when(employeeRepository.findAllWithSalary(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(row)));
+        when(rateRepository.findAll())
+                .thenReturn(List.of(new CurrencyRate("INR", new BigDecimal("0.012"))));
 
         PagedResponse<EmployeeSummary> result = service.list(PageRequest.of(0, 20));
 
-        assertThat(result.content()).hasSize(1);
-        assertThat(result.content().get(0).email()).isEqualTo("ada@acme.com");
-        assertThat(result.content().get(0).department()).isEqualTo("Engineering");
         assertThat(result.totalElements()).isEqualTo(1);
+        EmployeeSummary summary = result.content().get(0);
+        assertThat(summary.email()).isEqualTo("ada@acme.com");
+        assertThat(summary.salaryAmount()).isEqualByComparingTo("1000000");
+        assertThat(summary.currency()).isEqualTo("INR");
+        // 1,000,000 INR * 0.012 = 12,000.00 USD
+        assertThat(summary.salaryUsd()).isEqualByComparingTo("12000.00");
     }
 }
