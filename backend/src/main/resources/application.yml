@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: salary-management
+
+  # Datasource is driven entirely by environment variables so no secrets live
+  # in the repo. Defaults point at the local docker-compose Postgres.
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/salary}
+    username: ${SPRING_DATASOURCE_USERNAME:salary}
+    password: ${SPRING_DATASOURCE_PASSWORD:salary}
+
+  jpa:
+    # Flyway owns the schema; Hibernate only validates that entities match it.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+# Render (and most PaaS) inject the port via $PORT; default to 8080 locally.
+server:
+  port: ${PORT:8080}

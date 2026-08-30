@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.acme'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Web layer (REST controllers)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // Persistence (JPA / Hibernate)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // Request validation at the API boundary
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    // Versioned schema migrations
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    // PostgreSQL driver (runtime only)
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Testing (JUnit 5, AssertJ, Mockito, MockMvc)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+}

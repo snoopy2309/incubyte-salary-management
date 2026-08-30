@@ -1,0 +1,19 @@
+package com.acme.salary;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+/**
+ * Entry point for the salary management backend.
+ *
+ * <p>Organised as a modular monolith: features live in their own packages
+ * (employee, salary, insights, currency) with a web -> service -> repository
+ * layering. See docs/architecture.md and docs/adr/.
+ */
+@SpringBootApplication
+public class SalaryManagementApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SalaryManagementApplication.class, args);
+    }
+}
