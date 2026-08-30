@@ -2,9 +2,6 @@ package com.acme.salary;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -21,7 +18,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * {@code docker compose up -d} to include this test.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@EnabledIf("localPostgresIsReachable")
+@EnabledIf("com.acme.salary.support.LocalPostgres#isReachable")
 class SchemaMigrationTest {
 
     @Autowired
@@ -46,15 +43,5 @@ class SchemaMigrationTest {
         assertThat(columns).contains(
                 "id", "first_name", "last_name", "email", "country", "department",
                 "job_title", "join_date");
-    }
-
-    /** True if the local docker-compose Postgres is accepting connections. */
-    static boolean localPostgresIsReachable() {
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress("localhost", 5433), 1000);
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
     }
 }
