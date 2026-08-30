@@ -39,6 +39,6 @@ A living cheat-sheet of every significant concept used in this project — *what
 | **TDD (red → green → refactor)** | Write the failing test first, then the code | Drives simple designs and guarantees every line is covered by an intent |
 | **Unit tests (pure)** | Tests of logic with no Spring/DB | Fast and deterministic; the highest-value place to prove the currency/insight maths |
 | **MockMvc** | Spring's tool to test controllers without a running server | Verifies the HTTP/JSON contract quickly |
-| **Testcontainers** *(added when needed)* | Spins up a real Postgres in Docker for tests | Repository/insight SQL (e.g. `percentile_cont`) is tested against real Postgres, not a fake |
+| **Integration tests vs docker-compose Postgres** | DB-backed tests run against the real local Postgres, guarded by an availability check so they skip cleanly when it is down | Verifies migrations and SQL (e.g. `percentile_cont`) against real Postgres, not a fake. (Testcontainers was the first choice but the local Docker 29 engine has a client-negotiation incompatibility; running against the compose DB is reliable and equally real — a pragmatic trade-off.) |
 
 *Frontend concepts are added when the frontend build begins.*
