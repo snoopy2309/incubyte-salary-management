@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,5 +35,23 @@ class InsightsServiceTest {
         assertThat(summary.totalUsd()).isEqualByComparingTo("100000.13");
         assertThat(summary.averageUsd()).isEqualByComparingTo("33333.33");
         assertThat(summary.medianUsd()).isEqualByComparingTo("30000.01");
+    }
+
+    @Test
+    void roundsGroupedValuesToTwoDecimalPlaces() {
+        when(repository.fetchByCountry()).thenReturn(List.of(new GroupSummary(
+                "India", 1,
+                new BigDecimal("12000.129"),
+                new BigDecimal("12000.129"),
+                new BigDecimal("12000.125"))));
+
+        List<GroupSummary> result = service.byCountry();
+
+        assertThat(result).hasSize(1);
+        GroupSummary india = result.get(0);
+        assertThat(india.name()).isEqualTo("India");
+        assertThat(india.totalUsd()).isEqualByComparingTo("12000.13");
+        assertThat(india.averageUsd()).isEqualByComparingTo("12000.13");
+        assertThat(india.medianUsd()).isEqualByComparingTo("12000.13");
     }
 }

@@ -1,5 +1,6 @@
 package com.acme.salary.insights;
 
+import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,5 +20,17 @@ public class InsightsController {
     @GetMapping("/summary")
     public SalarySummary summary() {
         return service.summary();
+    }
+
+    /** Pay per country (USD): headcount, total, average, median. */
+    @GetMapping("/by-country")
+    public List<GroupSummary> byCountry() {
+        return service.byCountry();
+    }
+
+    /** Pay per department (USD): headcount, total, average, median. */
+    @GetMapping("/by-department")
+    public List<GroupSummary> byDepartment() {
+        return service.byDepartment();
     }
 }
