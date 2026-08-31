@@ -63,12 +63,35 @@ class EmployeeRepositoryTest {
         salaries.save(new Salary(employee.getId(), new BigDecimal("185000.00"), "USD",
                 LocalDate.of(2022, 1, 1)));
 
-        Page<EmployeeSalaryRow> page = repository.findAllWithSalary(PageRequest.of(0, 10));
+        Page<EmployeeSalaryRow> page = repository.findAllWithSalary(null, null, null, PageRequest.of(0, 10));
 
         assertThat(page.getContent()).anySatisfy(row -> {
             assertThat(row.email()).isEqualTo("grace@acme.com");
             assertThat(row.salaryAmount()).isEqualByComparingTo("185000.00");
             assertThat(row.currency()).isEqualTo("USD");
         });
+    }
+
+    @Test
+    void filtersByCountryAndSearchesByName() {
+        rates.save(new CurrencyRate("USD", new BigDecimal("1.000000")));
+        Employee us = repository.save(new Employee("Grace", "Hopper", "grace@acme.com",
+                "United States", "Engineering", "Principal Engineer", LocalDate.of(2019, 6, 1)));
+        Employee india = repository.save(new Employee("Aarav", "Patel", "aarav@acme.com",
+                "India", "Sales", "Manager", LocalDate.of(2021, 2, 1)));
+        salaries.save(new Salary(us.getId(), new BigDecimal("100000.00"), "USD", LocalDate.of(2022, 1, 1)));
+        salaries.save(new Salary(india.getId(), new BigDecimal("2000000.00"), "USD", LocalDate.of(2022, 1, 1)));
+
+        // Filter by country
+        Page<EmployeeSalaryRow> indiaOnly =
+                repository.findAllWithSalary("India", null, null, PageRequest.of(0, 10));
+        assertThat(indiaOnly.getContent())
+                .extracting(EmployeeSalaryRow::country).containsOnly("India");
+
+        // Search by name (case-insensitive)
+        Page<EmployeeSalaryRow> byName =
+                repository.findAllWithSalary(null, null, "hopper", PageRequest.of(0, 10));
+        assertThat(byName.getContent())
+                .extracting(EmployeeSalaryRow::email).containsExactly("grace@acme.com");
     }
 }

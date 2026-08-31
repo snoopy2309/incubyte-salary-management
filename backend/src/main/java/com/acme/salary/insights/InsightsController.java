@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** REST endpoints answering questions about how the organisation pays people. */
 @RestController
-@RequestMapping("/insights")
+@RequestMapping("/api/v1/insights")
 public class InsightsController {
 
     private final InsightsService service;

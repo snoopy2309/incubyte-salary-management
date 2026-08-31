@@ -2,6 +2,7 @@ package com.acme.salary.employee;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.when;
 
 import com.acme.salary.common.PagedResponse;
@@ -39,12 +40,14 @@ class EmployeeServiceTest {
         EmployeeSalaryRow row = new EmployeeSalaryRow(1L, "Ada", "Lovelace", "ada@acme.com",
                 "India", "Engineering", "Software Engineer",
                 new BigDecimal("1000000"), "INR");
-        when(employeeRepository.findAllWithSalary(any(Pageable.class)))
+        when(employeeRepository.findAllWithSalary(
+                nullable(String.class), nullable(String.class), nullable(String.class),
+                any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(row)));
         when(rateRepository.findAll())
                 .thenReturn(List.of(new CurrencyRate("INR", new BigDecimal("0.012"))));
 
-        PagedResponse<EmployeeSummary> result = service.list(PageRequest.of(0, 20));
+        PagedResponse<EmployeeSummary> result = service.list(null, null, null, PageRequest.of(0, 20));
 
         assertThat(result.totalElements()).isEqualTo(1);
         EmployeeSummary summary = result.content().get(0);

@@ -31,7 +31,7 @@ class InsightsControllerTest {
                 new BigDecimal("84200.00"),
                 new BigDecimal("71500.00")));
 
-        mockMvc.perform(get("/insights/summary"))
+        mockMvc.perform(get("/api/v1/insights/summary"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.headcount").value(10000))
                 .andExpect(jsonPath("$.totalUsd").value(482600000.00))
@@ -47,7 +47,7 @@ class InsightsControllerTest {
                 new BigDecimal("118000.00"),
                 new BigDecimal("110000.00"))));
 
-        mockMvc.perform(get("/insights/by-country"))
+        mockMvc.perform(get("/api/v1/insights/by-country"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("United States"))
                 .andExpect(jsonPath("$[0].headcount").value(1688))
@@ -62,7 +62,7 @@ class InsightsControllerTest {
                 new BigDecimal("115000.00"),
                 new BigDecimal("108000.00"))));
 
-        mockMvc.perform(get("/insights/by-department"))
+        mockMvc.perform(get("/api/v1/insights/by-department"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("Engineering"))
                 .andExpect(jsonPath("$[0].headcount").value(1300));
@@ -74,7 +74,7 @@ class InsightsControllerTest {
                 new SalaryBand("< $50k", 1500),
                 new SalaryBand("$50k–$75k", 2000)));
 
-        mockMvc.perform(get("/insights/distribution"))
+        mockMvc.perform(get("/api/v1/insights/distribution"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].label").value("< $50k"))
                 .andExpect(jsonPath("$[0].headcount").value(1500))

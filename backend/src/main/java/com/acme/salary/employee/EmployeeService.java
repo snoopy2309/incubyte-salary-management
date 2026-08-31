@@ -25,10 +25,12 @@ public class EmployeeService {
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<EmployeeSummary> list(Pageable pageable) {
+    public PagedResponse<EmployeeSummary> list(String country, String department, String q,
+                                               Pageable pageable) {
         CurrencyConverter converter = loadConverter();
         return PagedResponse.from(
-                employeeRepository.findAllWithSalary(pageable)
+                employeeRepository.findAllWithSalary(
+                                blankToNull(country), blankToNull(department), blankToNull(q), pageable)
                         .map(row -> toSummary(row, converter)));
     }
 
@@ -44,5 +46,10 @@ public class EmployeeService {
                 row.country(), row.department(), row.jobTitle(),
                 row.salaryAmount(), row.currency(),
                 converter.toUsd(row.salaryAmount(), row.currency()));
+    }
+
+    /** Treat blank/whitespace filter values as "no filter". */
+    private static String blankToNull(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 }
