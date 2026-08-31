@@ -11,6 +11,7 @@ import com.acme.salary.salary.SalaryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,5 +95,30 @@ class InsightsRepositoryTest {
 
     private static GroupSummary groupNamed(List<GroupSummary> groups, String name) {
         return groups.stream().filter(g -> g.name().equals(name)).findFirst().orElseThrow();
+    }
+
+    @Test
+    void distributesSalariesIntoUsdBands() {
+        rates.save(new CurrencyRate("USD", new BigDecimal("1.000000")));
+        Employee a = employees.save(new Employee("A", "One", "a@acme.com",
+                "United States", "Engineering", "Engineer", LocalDate.of(2020, 1, 1)));
+        Employee b = employees.save(new Employee("B", "Two", "b@acme.com",
+                "United States", "Engineering", "Engineer", LocalDate.of(2020, 1, 1)));
+        Employee c = employees.save(new Employee("C", "Three", "c@acme.com",
+                "United States", "Engineering", "Engineer", LocalDate.of(2020, 1, 1)));
+        Employee d = employees.save(new Employee("D", "Four", "d@acme.com",
+                "United States", "Engineering", "Engineer", LocalDate.of(2020, 1, 1)));
+
+        salaries.save(new Salary(a.getId(), new BigDecimal("40000.00"), "USD", LocalDate.of(2022, 1, 1)));  // band 0
+        salaries.save(new Salary(b.getId(), new BigDecimal("80000.00"), "USD", LocalDate.of(2022, 1, 1)));  // band 2
+        salaries.save(new Salary(c.getId(), new BigDecimal("90000.00"), "USD", LocalDate.of(2022, 1, 1)));  // band 2
+        salaries.save(new Salary(d.getId(), new BigDecimal("300000.00"), "USD", LocalDate.of(2022, 1, 1))); // band 5
+
+        Map<Integer, Long> distribution = insights.fetchDistribution();
+
+        assertThat(distribution)
+                .containsEntry(0, 1L)
+                .containsEntry(2, 2L)
+                .containsEntry(5, 1L);
     }
 }

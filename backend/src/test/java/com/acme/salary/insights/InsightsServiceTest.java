@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -53,5 +54,18 @@ class InsightsServiceTest {
         assertThat(india.totalUsd()).isEqualByComparingTo("12000.13");
         assertThat(india.averageUsd()).isEqualByComparingTo("12000.13");
         assertThat(india.medianUsd()).isEqualByComparingTo("12000.13");
+    }
+
+    @Test
+    void distributionReturnsAllBandsFillingEmptyOnesWithZero() {
+        when(repository.fetchDistribution()).thenReturn(Map.of(2, 2L));
+
+        List<SalaryBand> bands = service.distribution();
+
+        assertThat(bands).hasSize(6);
+        assertThat(bands.get(0).label()).isEqualTo("< $50k");
+        assertThat(bands.get(0).headcount()).isZero();
+        assertThat(bands.get(2).label()).isEqualTo("$75k–$100k");
+        assertThat(bands.get(2).headcount()).isEqualTo(2);
     }
 }

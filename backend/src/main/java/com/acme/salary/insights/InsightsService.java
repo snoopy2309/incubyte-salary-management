@@ -3,6 +3,7 @@ package com.acme.salary.insights;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class InsightsService {
 
     private static final int MONEY_SCALE = 2;
+
+    /** Band order -> label; boundaries defined in InsightsRepository's distribution query. */
+    private static final List<Band> BANDS = List.of(
+            new Band(0, "< $50k"),
+            new Band(1, "$50k–$75k"),
+            new Band(2, "$75k–$100k"),
+            new Band(3, "$100k–$150k"),
+            new Band(4, "$150k–$200k"),
+            new Band(5, "$200k+"));
+
+    private record Band(int order, String label) {
+    }
 
     private final InsightsRepository repository;
 
@@ -36,6 +49,14 @@ public class InsightsService {
     @Transactional(readOnly = true)
     public List<GroupSummary> byDepartment() {
         return rounded(repository.fetchByDepartment());
+    }
+
+    @Transactional(readOnly = true)
+    public List<SalaryBand> distribution() {
+        Map<Integer, Long> counts = repository.fetchDistribution();
+        return BANDS.stream()
+                .map(band -> new SalaryBand(band.label(), counts.getOrDefault(band.order(), 0L)))
+                .toList();
     }
 
     private static List<GroupSummary> rounded(List<GroupSummary> groups) {

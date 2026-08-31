@@ -67,4 +67,17 @@ class InsightsControllerTest {
                 .andExpect(jsonPath("$[0].name").value("Engineering"))
                 .andExpect(jsonPath("$[0].headcount").value(1300));
     }
+
+    @Test
+    void returnsDistribution() throws Exception {
+        when(service.distribution()).thenReturn(List.of(
+                new SalaryBand("< $50k", 1500),
+                new SalaryBand("$50k–$75k", 2000)));
+
+        mockMvc.perform(get("/insights/distribution"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].label").value("< $50k"))
+                .andExpect(jsonPath("$[0].headcount").value(1500))
+                .andExpect(jsonPath("$[1].headcount").value(2000));
+    }
 }

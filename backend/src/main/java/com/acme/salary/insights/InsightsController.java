@@ -33,4 +33,10 @@ public class InsightsController {
     public List<GroupSummary> byDepartment() {
         return service.byDepartment();
     }
+
+    /** Salary distribution: employee counts per USD pay band. */
+    @GetMapping("/distribution")
+    public List<SalaryBand> distribution() {
+        return service.distribution();
+    }
 }
