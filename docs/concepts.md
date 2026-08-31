@@ -23,6 +23,14 @@ A living cheat-sheet of every significant concept used in this project — *what
 | **`spring.jpa.hibernate.ddl-auto: validate`** | Hibernate only verifies entities match the schema | Flyway stays the single source of truth for schema; Hibernate never silently changes it |
 | **Environment-variable config** | Settings injected from the environment, not committed | 12-factor; no secrets in the repo; the same build runs locally and in the cloud |
 
+## API design
+
+| Concept | What it is | Why here / if asked |
+|---|---|---|
+| **URI versioning (`/api/v1`)** | Version in the path | Lets the API evolve without breaking clients — a future breaking change ships as `/api/v2` |
+| **Offset pagination** | `page`/`size` + `totalElements`/`totalPages` + `hasNext`/`hasPrevious` | Gives the HR user a count and jump-to-page; trivially fast at 10k. Scaling path to keyset is documented ([trade-offs](trade-offs.md)) |
+| **`PagedResponse` DTO** | Explicit paged JSON shape | Stable contract not tied to Spring's internal `Page` serialisation |
+
 ## Money & data
 
 | Concept | What it is | Why here / if asked |
