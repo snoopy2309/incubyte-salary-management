@@ -32,7 +32,8 @@ Each question maps directly to a feature below — the product exists to answer 
    - Total payroll cost, headcount, and organisation-wide average & median salary.
    - Average **and median** salary, headcount, and cost **by country** and **by department**.
    - Salary **distribution** across bands (how many people sit in each pay band).
-4. **Seed data** — a deterministic script generating 10,000 realistic employees across ~6 countries/currencies, so the tool and its tests are reproducible.
+4. **Manage employees (confirmed with Incubyte)** — HR can **create** a new employee, **update** their salary and details, and **deactivate (soft-delete)** an employee. The list and insights reflect only active employees.
+5. **Seed data** — a deterministic script generating 10,000 realistic employees across ~6 countries/currencies, so the tool and its tests are reproducible.
 
 *Nice-to-have (only if core is solid and time allows):* top earners, per-department pay range (min/max/spread).
 
@@ -44,15 +45,15 @@ Each question maps directly to a feature below — the product exists to answer 
 | **Salary history / audit trail** | v1 shows one *current* salary per employee. The schema keeps an `effectiveDate` on salary, so history is a **data-additive** change later — designed for, not built now. |
 | **Excel / bulk import** | The brief's pain point is *querying* the data, not migrating it. A seed script covers the demo need; import is a well-understood extension. |
 | **Live foreign-exchange rates** | Rates are stored in a table and treated as reference data. Real-time FX adds an external dependency and non-determinism (bad for tests) for no gain in demonstrating the core idea. |
-| **Salary editing / write workflows** | v1 optimises for *reading and answering questions* (the stated need). Create/update endpoints are a straightforward extension on the same model. *(Pending clarification with Incubyte.)* |
+| **Hard delete of employee records** | Deletion is a **soft-delete (deactivate)** so records are recoverable and history is preserved — the norm for HR data. Permanent deletion is deliberately not offered. |
 | **Internationalisation (UI language)** | Multi-*currency* matters for correctness; multi-*language UI* does not serve the HR-Manager persona for this exercise. |
 
 ## Key assumptions
 
 - Each employee has exactly **one current salary**, stored in their **local currency** with an explicit currency code.
-- Cross-country comparisons are made by converting to **USD** via a stored `CurrencyRate` table (documented, deterministic). *Assumption raised with Incubyte.*
+- Cross-country comparisons are made by converting to **USD** via a stored `CurrencyRate` table (documented, deterministic). *Confirmed by Incubyte.*
 - 10,000 employees is a **modest** dataset for a relational database; correctness, clean pagination, indexed filters, and SQL-side aggregation matter more than distributed-systems concerns. We deliberately do **not** over-engineer for scale.
-- The HR Manager primarily **views and questions** pay data in v1 (read + analytics). *Assumption raised with Incubyte.*
+- The HR Manager both **manages** employee records (create, update, deactivate) and **questions** pay data (analytics). *Confirmed by Incubyte — full CRUD is in scope.*
 
 ## What "done" means
 
