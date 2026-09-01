@@ -4,6 +4,11 @@ import {
   Alert,
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   MenuItem,
   Paper,
@@ -21,20 +26,23 @@ import {
   Typography,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined'
 import DownloadIcon from '@mui/icons-material/Download'
 import EditIcon from '@mui/icons-material/Edit'
 import {
   createEmployee,
+  deactivateEmployee,
   fetchByCountry,
   fetchByDepartment,
   fetchEmployees,
+  updateEmployee,
   updateSalary,
 } from '../api/client'
 import { useDebounce } from '../hooks/useDebounce'
 import { formatCurrency, formatNumber, formatUsd } from '../utils/format'
 import { downloadCsv, toCsv } from '../utils/csv'
 import AddEmployeeDialog from '../components/AddEmployeeDialog'
-import EditSalaryDialog from '../components/EditSalaryDialog'
+import EditEmployeeDialog from '../components/EditEmployeeDialog'
 
 const COLUMNS = [
   { label: 'Name', sx: { width: 190, minWidth: 190 } },
@@ -75,6 +83,7 @@ export default function EmployeesPage() {
   const queryClient = useQueryClient()
   const [addOpen, setAddOpen] = useState(false)
   const [editEmployee, setEditEmployee] = useState(null)
+  const [deactivateTarget, setDeactivateTarget] = useState(null)
   const [exporting, setExporting] = useState(false)
 
   const refreshAll = () => queryClient.invalidateQueries()
@@ -88,9 +97,20 @@ export default function EmployeesPage() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, amount, currency }) => updateSalary(id, { amount, currency }),
+    mutationFn: async ({ id, salaryAmount, currency, ...details }) => {
+      await updateEmployee(id, details)
+      await updateSalary(id, { amount: salaryAmount, currency })
+    },
     onSuccess: () => {
       setEditEmployee(null)
+      refreshAll()
+    },
+  })
+
+  const deactivateMutation = useMutation({
+    mutationFn: (id) => deactivateEmployee(id),
+    onSuccess: () => {
+      setDeactivateTarget(null)
       refreshAll()
     },
   })
@@ -260,7 +280,7 @@ export default function EmployeesPage() {
                     <TableCell align="right" sx={{ width: 140, minWidth: 140 }}>
                       Salary (USD)
                     </TableCell>
-                    <TableCell align="right" sx={{ width: 56 }} />
+                    <TableCell align="right" sx={{ width: 96 }} />
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -307,10 +327,15 @@ export default function EmployeesPage() {
                         <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>
                           {formatUsd(e.salaryUsd)}
                         </TableCell>
-                        <TableCell align="right" padding="checkbox">
-                          <Tooltip title="Edit salary">
+                        <TableCell align="right">
+                          <Tooltip title="Edit">
                             <IconButton size="small" onClick={() => setEditEmployee(e)}>
                               <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Deactivate">
+                            <IconButton size="small" onClick={() => setDeactivateTarget(e)}>
+                              <DeleteOutlineIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         </TableCell>
@@ -348,14 +373,48 @@ export default function EmployeesPage() {
         saving={createMutation.isPending}
         error={createError}
       />
-      <EditSalaryDialog
+      <EditEmployeeDialog
         employee={editEmployee}
-        onClose={() => setEditEmployee(null)}
-        onSave={({ amount, currency }) =>
-          updateMutation.mutate({ id: editEmployee.id, amount, currency })
-        }
+        countries={(countryOptions.data ?? []).map((c) => c.name)}
+        departments={(departmentOptions.data ?? []).map((d) => d.name)}
+        onClose={() => {
+          setEditEmployee(null)
+          updateMutation.reset()
+        }}
+        onSave={(payload) => updateMutation.mutate({ id: editEmployee.id, ...payload })}
         saving={updateMutation.isPending}
+        error={
+          updateMutation.isError
+            ? updateMutation.error?.response?.data?.message || 'Could not save changes.'
+            : null
+        }
       />
+
+      <Dialog
+        open={Boolean(deactivateTarget)}
+        onClose={() => setDeactivateTarget(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Deactivate employee?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {deactivateTarget ? `${deactivateTarget.firstName} ${deactivateTarget.lastName}` : ''} will
+            be hidden from the list and excluded from insights. Their record is kept, not deleted.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeactivateTarget(null)}>Cancel</Button>
+          <Button
+            color="error"
+            variant="contained"
+            disabled={deactivateMutation.isPending}
+            onClick={() => deactivateMutation.mutate(deactivateTarget.id)}
+          >
+            Deactivate
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

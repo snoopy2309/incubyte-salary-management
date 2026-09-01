@@ -27,6 +27,15 @@ export async function updateSalary(id, { amount, currency }) {
   return data
 }
 
+export async function updateEmployee(id, details) {
+  const { data } = await api.patch(`/employees/${id}`, details)
+  return data
+}
+
+export async function deactivateEmployee(id) {
+  await api.delete(`/employees/${id}`)
+}
+
 export async function fetchSummary() {
   const { data } = await api.get('/insights/summary')
   return data
