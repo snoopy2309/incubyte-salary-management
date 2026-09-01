@@ -12,6 +12,16 @@ export async function fetchEmployees({ page = 0, size = 20, country, department,
   return data
 }
 
+export async function createEmployee(payload) {
+  const { data } = await api.post('/employees', payload)
+  return data
+}
+
+export async function updateSalary(id, { amount, currency }) {
+  const { data } = await api.patch(`/employees/${id}/salary`, { amount, currency })
+  return data
+}
+
 export async function fetchSummary() {
   const { data } = await api.get('/insights/summary')
   return data

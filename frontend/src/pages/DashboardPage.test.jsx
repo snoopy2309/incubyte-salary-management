@@ -12,19 +12,23 @@ function renderWithQuery(ui) {
 }
 
 describe('DashboardPage', () => {
-  it('shows the summary stat cards once loaded', async () => {
+  it('shows the summary stat cards and chart sections once loaded', async () => {
     client.fetchSummary.mockResolvedValue({
       headcount: 10000,
       totalUsd: 888591234.4,
       averageUsd: 88859.12,
       medianUsd: 85320,
     })
+    client.fetchByCountry.mockResolvedValue([])
+    client.fetchByDepartment.mockResolvedValue([])
+    client.fetchDistribution.mockResolvedValue([])
 
     renderWithQuery(<DashboardPage />)
 
     expect(await screen.findByText('10,000')).toBeInTheDocument()
     expect(screen.getByText('$88,859')).toBeInTheDocument()
     expect(screen.getByText('$85,320')).toBeInTheDocument()
-    expect(screen.getByText('Median salary')).toBeInTheDocument()
+    expect(screen.getByText('Pay by country')).toBeInTheDocument()
+    expect(screen.getByText('How is pay spread?')).toBeInTheDocument()
   })
 })
