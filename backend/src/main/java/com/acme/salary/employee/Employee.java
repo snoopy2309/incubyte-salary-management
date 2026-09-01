@@ -26,6 +26,7 @@ public class Employee {
     private String department;
     private String jobTitle;
     private LocalDate joinDate;
+    private boolean active = true;
 
     /** Required by JPA. */
     protected Employee() {
@@ -40,6 +41,26 @@ public class Employee {
         this.department = department;
         this.jobTitle = jobTitle;
         this.joinDate = joinDate;
+    }
+
+    /** Update the editable personal/organisational details. */
+    public void updateDetails(String firstName, String lastName, String email,
+                              String country, String department, String jobTitle) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.country = country;
+        this.department = department;
+        this.jobTitle = jobTitle;
+    }
+
+    /** Soft-delete: mark inactive rather than removing the record. */
+    public void deactivate() {
+        this.active = false;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     public Long getId() {

@@ -14,6 +14,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     boolean existsByEmail(String email);
 
+    boolean existsByEmailAndIdNot(String email, Long id);
+
     /**
      * Employees joined with their salary, for the list screen, with optional
      * filters. A null filter is ignored (matches everything). Ordered by id so
@@ -30,6 +32,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                 e.jobTitle, s.amount, s.currency)
             FROM Employee e, Salary s
             WHERE s.employeeId = e.id
+              AND e.active = true
               AND (:country IS NULL OR e.country = :country)
               AND (:department IS NULL OR e.department = :department)
               AND (:q IS NULL
@@ -42,6 +45,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             SELECT count(e)
             FROM Employee e, Salary s
             WHERE s.employeeId = e.id
+              AND e.active = true
               AND (:country IS NULL OR e.country = :country)
               AND (:department IS NULL OR e.department = :department)
               AND (:q IS NULL

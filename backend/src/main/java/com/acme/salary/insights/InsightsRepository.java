@@ -24,6 +24,8 @@ public class InsightsRepository {
                        ORDER BY s.amount * r.rate_to_usd), 0)                           AS median_usd
             FROM salaries s
             JOIN currency_rates r ON r.currency = s.currency
+            JOIN employees e ON e.id = s.employee_id
+            WHERE e.active = true
             """;
 
     /**
@@ -40,6 +42,7 @@ public class InsightsRepository {
             FROM employees e
             JOIN salaries s      ON s.employee_id = e.id
             JOIN currency_rates r ON r.currency = s.currency
+            WHERE e.active = true
             GROUP BY %1$s
             ORDER BY total_usd DESC
             """;
@@ -65,6 +68,8 @@ public class InsightsRepository {
                 END AS band_order
                 FROM salaries s
                 JOIN currency_rates r ON r.currency = s.currency
+                JOIN employees e ON e.id = s.employee_id
+                WHERE e.active = true
             ) banded
             GROUP BY band_order
             """;

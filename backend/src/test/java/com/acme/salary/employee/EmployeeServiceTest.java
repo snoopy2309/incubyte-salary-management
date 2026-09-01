@@ -121,4 +121,37 @@ class EmployeeServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("already exists");
     }
+
+    @Test
+    void updatesEmployeeDetails() {
+        Employee employee = new Employee("Ada", "Lovelace", "ada@acme.com",
+                "United Kingdom", "Engineering", "Engineer", LocalDate.of(2020, 1, 1));
+        Salary salary = new Salary(1L, new BigDecimal("90000"), "GBP", LocalDate.of(2020, 1, 1));
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(employeeRepository.existsByEmailAndIdNot("ada.new@acme.com", 1L)).thenReturn(false);
+        when(salaryRepository.findByEmployeeId(1L)).thenReturn(Optional.of(salary));
+        when(rateRepository.findAll())
+                .thenReturn(List.of(new CurrencyRate("GBP", new BigDecimal("1.27"))));
+
+        UpdateEmployeeRequest request = new UpdateEmployeeRequest("Ada", "Byron",
+                "ada.new@acme.com", "United Kingdom", "Product", "Lead");
+        EmployeeSummary result = service.updateEmployee(1L, request);
+
+        assertThat(result.lastName()).isEqualTo("Byron");
+        assertThat(result.email()).isEqualTo("ada.new@acme.com");
+        assertThat(result.department()).isEqualTo("Product");
+        verify(employeeRepository).save(employee);
+    }
+
+    @Test
+    void deactivatesEmployee() {
+        Employee employee = new Employee("Ada", "Lovelace", "ada@acme.com",
+                "United Kingdom", "Engineering", "Engineer", LocalDate.of(2020, 1, 1));
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+
+        service.deactivateEmployee(1L);
+
+        assertThat(employee.isActive()).isFalse();
+        verify(employeeRepository).save(employee);
+    }
 }

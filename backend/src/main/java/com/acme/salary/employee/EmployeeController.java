@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,5 +53,19 @@ public class EmployeeController {
     public EmployeeSummary updateSalary(@PathVariable Long id,
                                         @Valid @RequestBody UpdateSalaryRequest request) {
         return service.updateSalary(id, request.amount(), request.currency());
+    }
+
+    /** Update an employee's personal/organisational details. */
+    @PatchMapping("/{id}")
+    public EmployeeSummary update(@PathVariable Long id,
+                                  @Valid @RequestBody UpdateEmployeeRequest request) {
+        return service.updateEmployee(id, request);
+    }
+
+    /** Deactivate (soft-delete) an employee. */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deactivate(@PathVariable Long id) {
+        service.deactivateEmployee(id);
     }
 }

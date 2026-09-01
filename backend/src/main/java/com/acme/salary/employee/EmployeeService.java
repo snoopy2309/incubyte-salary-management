@@ -55,6 +55,29 @@ public class EmployeeService {
         return toSummary(employee, request.salaryAmount(), request.currency(), loadConverter());
     }
 
+    @Transactional
+    public EmployeeSummary updateEmployee(Long employeeId, UpdateEmployeeRequest request) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("No employee with id " + employeeId));
+        if (employeeRepository.existsByEmailAndIdNot(request.email(), employeeId)) {
+            throw new IllegalArgumentException("An employee with email " + request.email() + " already exists");
+        }
+        employee.updateDetails(request.firstName(), request.lastName(), request.email(),
+                request.country(), request.department(), request.jobTitle());
+        employeeRepository.save(employee);
+        Salary salary = salaryRepository.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("No salary for employee " + employeeId));
+        return toSummary(employee, salary.getAmount(), salary.getCurrency(), loadConverter());
+    }
+
+    @Transactional
+    public void deactivateEmployee(Long employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("No employee with id " + employeeId));
+        employee.deactivate();
+        employeeRepository.save(employee);
+    }
+
     private void requireKnownCurrency(String currency) {
         if (!rateRepository.existsById(currency)) {
             throw new IllegalArgumentException("Unknown currency: " + currency);
