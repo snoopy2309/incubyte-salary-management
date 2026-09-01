@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -49,6 +50,15 @@ public class SeedDataGenerator {
     private static final int MAX_TENURE_DAYS = 3650; // up to ~10 years
     private static final int SALARY_ROUNDING = 1000;
 
+    // Pay realistically varies by seniority and by department, not just country.
+    private static final Map<String, Double> ROLE_FACTOR = Map.of(
+            "Associate", 0.72, "Specialist", 0.88, "Senior Specialist", 1.05, "Lead", 1.25,
+            "Manager", 1.5, "Senior Manager", 1.8, "Director", 2.3);
+
+    private static final Map<String, Double> DEPARTMENT_FACTOR = Map.of(
+            "Engineering", 1.25, "Product", 1.15, "Finance", 1.1, "Sales", 1.05,
+            "Marketing", 1.0, "Operations", 0.92, "Human Resources", 0.88, "Customer Support", 0.8);
+
     /** The currency rates backing the generated salaries. */
     public List<CurrencyRate> currencyRates() {
         List<CurrencyRate> rates = new ArrayList<>();
@@ -73,7 +83,7 @@ public class SeedDataGenerator {
             String email = (firstName + "." + lastName + (i + 1) + "@acme.com")
                     .toLowerCase(Locale.ROOT);
             LocalDate joinDate = REFERENCE_DATE.minusDays(random.nextInt(MAX_TENURE_DAYS));
-            BigDecimal salary = randomSalary(country, random);
+            BigDecimal salary = randomSalary(country, department, jobTitle, random);
 
             employees.add(new SeededEmployee(firstName, lastName, email, country.name(),
                     department, jobTitle, joinDate, salary, country.currency(), joinDate));
@@ -85,10 +95,17 @@ public class SeedDataGenerator {
         return options.get(random.nextInt(options.size()));
     }
 
-    private BigDecimal randomSalary(Country country, Random random) {
+    private BigDecimal randomSalary(Country country, String department, String jobTitle, Random random) {
+        // A base within the country band, scaled by seniority and department, with
+        // a little jitter — so pay varies realistically along all three dimensions.
         int span = country.maxSalary() - country.minSalary();
-        int raw = country.minSalary() + random.nextInt(span + 1);
-        int rounded = (raw / SALARY_ROUNDING) * SALARY_ROUNDING;
-        return new BigDecimal(rounded).setScale(2);
+        double base = country.minSalary() + random.nextDouble() * span;
+        double jitter = 0.9 + random.nextDouble() * 0.2; // ±10%
+        double factored = base
+                * ROLE_FACTOR.getOrDefault(jobTitle, 1.0)
+                * DEPARTMENT_FACTOR.getOrDefault(department, 1.0)
+                * jitter;
+        long rounded = Math.round(factored / SALARY_ROUNDING) * SALARY_ROUNDING;
+        return new BigDecimal(Math.max(rounded, SALARY_ROUNDING)).setScale(2);
     }
 }
