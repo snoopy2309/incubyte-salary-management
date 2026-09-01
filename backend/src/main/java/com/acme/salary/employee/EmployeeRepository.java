@@ -12,6 +12,8 @@ import org.springframework.data.repository.query.Param;
  */
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
+    boolean existsByEmail(String email);
+
     /**
      * Employees joined with their salary, for the list screen, with optional
      * filters. A null filter is ignored (matches everything). Ordered by id so

@@ -41,6 +41,12 @@ public class Salary {
         this.effectiveDate = effectiveDate;
     }
 
+    /** Update the salary to a new amount and currency (v1 keeps one current salary). */
+    public void changeTo(BigDecimal amount, String currency) {
+        this.amount = amount;
+        this.currency = currency;
+    }
+
     public Long getId() {
         return id;
     }

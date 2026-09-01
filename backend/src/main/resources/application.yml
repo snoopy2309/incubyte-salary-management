@@ -18,6 +18,13 @@ spring:
   flyway:
     enabled: true
 
+  # Allow large page sizes so a full CSV export can fetch every row in one call
+  # (default cap is 2000). The normal UI still requests small pages.
+  data:
+    web:
+      pageable:
+        max-page-size: 20000
+
 # Render (and most PaaS) inject the port via $PORT; default to 8080 locally.
 server:
   port: ${PORT:8080}
