@@ -1,7 +1,12 @@
 import axios from 'axios'
 
-// All calls go to the versioned API; Vite proxies /api to the backend in dev.
-const api = axios.create({ baseURL: '/api/v1' })
+// In dev, Vite proxies /api to the backend. In production, VITE_API_BASE_URL
+// points at the deployed backend (e.g. https://your-api.onrender.com).
+const baseURL = import.meta.env.VITE_API_BASE_URL
+  ? `${import.meta.env.VITE_API_BASE_URL}/api/v1`
+  : '/api/v1'
+
+const api = axios.create({ baseURL })
 
 export async function fetchEmployees({ page = 0, size = 20, country, department, q } = {}) {
   const params = { page, size }
