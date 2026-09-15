@@ -3,8 +3,10 @@ package com.acme.salary.seed;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.acme.salary.currency.CurrencyRateRepository;
+import com.acme.salary.employee.Employee;
 import com.acme.salary.employee.EmployeeRepository;
 import com.acme.salary.salary.SalaryRepository;
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,5 +42,18 @@ class DataSeederTest {
         assertThat(employees.count()).isEqualTo(25);
         assertThat(salaries.count()).isEqualTo(25);
         assertThat(rates.count()).isGreaterThanOrEqualTo(6);
+    }
+
+    @Test
+    void advancesIdentitySoLaterInsertsDoNotCollideWithSeededIds() {
+        seeder.seed(10, 123L);
+
+        // The seed assigns explicit ids 1..10; a later application insert must
+        // get an id past them rather than colliding on the identity sequence.
+        Employee saved = employees.save(new Employee("New", "Hire",
+                "new.hire@example.com", "United States", "Engineering", "Associate",
+                LocalDate.of(2020, 1, 1)));
+
+        assertThat(saved.getId()).isGreaterThan(10L);
     }
 }
