@@ -4,10 +4,11 @@ A web tool for ACME's HR team to manage salary data across **10,000 employees in
 
 > Built as a take-home assessment, emphasising clear thinking, right-sized design, clean tested code, and an honest record of how it was built with AI.
 
-<!-- Add once deployed -->
-**Live demo:** _to be added_ · **Demo video:** _to be added_
+**Live demo:** https://incubyte-salary-management-lac.vercel.app · **API docs:** [Swagger UI](https://incubyte-salary-management-wvo4.onrender.com/swagger-ui/index.html) · **Demo video:** _to be added_
 
 **Demo login:** `hr@acme.com` / `acme1234`
+
+> The API runs on Render's free tier, which sleeps when idle — the **first request can take up to ~100 seconds** while it wakes. After that it's fast.
 
 ## Features
 
@@ -59,6 +60,23 @@ cd frontend && npm test          # component + logic tests
 ```
 
 Tests are fast and deterministic; the database-backed tests skip automatically if the local Postgres is not running, so the unit suite always runs.
+
+## Deployment
+
+| Part | Host | Notes |
+|---|---|---|
+| Frontend | Vercel | Root directory `frontend`, Vite preset; redeploys on every push to `main` |
+| Backend | Render (Docker) | Built from `backend/Dockerfile`; redeploys on every push to `main` |
+| Database | Neon (PostgreSQL) | Schema managed by Flyway on startup |
+
+Configuration comes from environment variables only — no secrets in the repo:
+
+| Variable | Where | Purpose |
+|---|---|---|
+| `VITE_API_BASE_URL` | Vercel | Backend origin, e.g. `https://<api>.onrender.com` (no `/api/v1` — the client adds it). Read at **build** time, so redeploy after changing it. |
+| `CORS_ALLOWED_ORIGINS` | Render | Comma-separated frontend origins allowed to call the API, e.g. `https://<app>.vercel.app` (no trailing slash). |
+| `SPRING_DATASOURCE_URL` / `_USERNAME` / `_PASSWORD` | Render | Postgres connection. |
+| `APP_SEED_ON_STARTUP` | Render | Seeds the 10,000 employees on first startup when the table is empty. |
 
 ## Project structure
 
